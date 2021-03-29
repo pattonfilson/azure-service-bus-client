@@ -1,0 +1,22 @@
+{
+	"name": "cloudsystems/azure-service-bus-client",
+	"description": "API Client for accessing Azure REST API.",
+	"type": "library",
+	"require": {
+		"php": ">=7.2.5",
+		"guzzlehttp/guzzle": "^7.2"
+	},
+	"license": "AGPLv3",
+	"authors": [
+		{
+			"name": "Craig Rodway",
+			"email": "craig@cloud-systems.io"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"CloudSystems\\AzureServiceBusClient\\": "src/"
+		}
+	},
+	"prefer-stable": true
+}
