@@ -3,7 +3,7 @@
 	"description": "API Client for accessing Azure REST API.",
 	"type": "library",
 	"require": {
-		"php": ">=7.2.5",
+		"php": ">=7.2",
 		"guzzlehttp/guzzle": "^7.2"
 	},
 	"license": "AGPLv3",
