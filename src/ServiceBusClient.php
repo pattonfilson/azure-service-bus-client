@@ -13,6 +13,7 @@ class ServiceBusClient
 
 
 	private $config;
+	private $timeout;
 	private $baseUri;
 	private $sasKeyName;
 	private $sasKeyValue;
@@ -43,6 +44,8 @@ class ServiceBusClient
 			throw new BaseException("No sasKeyValue provided.");
 		}
 
+		$this->timeout = $config['timeout'] ?? 4;
+
 		$this->initGuzzle();
 
 		return $this;
@@ -59,6 +62,20 @@ class ServiceBusClient
 	public function getAuthHeader($uri)
 	{
 		return $this->generateSasToken($this->baseUri . $uri, $this->sasKeyName, $this->sasKeyValue);
+	}
+
+
+	/**
+	 * Set a new timeout value (in seconds) for receive requests.
+	 *
+	 * @param int $timeout Timeout in seconds to wait for receiving messages.
+	 * @return this
+	 *
+	 */
+	public function setTimeout($timeout)
+	{
+		$this->timeout = $timeout;
+		return $this;
 	}
 
 
@@ -96,7 +113,7 @@ class ServiceBusClient
 	 */
 	public function peek($queueName, $returnResponse = false)
 	{
-		$uri = sprintf('%s/messages/head', $queueName);
+		$uri = sprintf('%s/messages/head?timeout=%d', $queueName, $this->timeout);
 		$headers = [ 'Authorization' => $this->getAuthHeader($uri) ];
 		$response = $this->post($uri, [], $headers)->asResponse();
 
