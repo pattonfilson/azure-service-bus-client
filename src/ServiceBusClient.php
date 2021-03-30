@@ -128,6 +128,7 @@ class ServiceBusClient
 
 		return [
 			'body' => json_decode($body, true) ?: $body,
+			'queue' => $queueName,
 			'location' => $location,
 			'properties' => $brokerData,
 		];
@@ -161,6 +162,7 @@ class ServiceBusClient
 
 		return [
 			'body' => json_decode($body, true) ?: $body,
+			'queue' => $queueName,
 			'location' => $location,
 			'properties' => $brokerData,
 		];
@@ -170,17 +172,28 @@ class ServiceBusClient
 	/**
 	 * Unlock a message in the specified queue, for processing by other receivers.
 	 *
+	 * Either pass the return value from peek() (array of body, location, queue, properties) to the first parameter;
+	 * or
+	 *
 	 * Message ID and Lock Token are returned in the 'properties' key of a call to `peek()`:
 	 * 	['properties']['MessageId'] and ['properties']['LockToken'].
 	 *
-	 * @param string $queueName Name of queue
-	 * @param string $messageId ID of message (retrieved by peek())
+	 * @param string|array $data Name of queue, or Array of data returned from peek()
+	 * @param string $messageId ID of message
 	 * @param string $lockToken Lock Token value from message
 	 * @return bool
 	 *
 	 */
-	public function unlockMessage($queueName, $messageId, $lockToken)
+	public function unlockMessage($data, $messageId = null, $lockToken = null)
 	{
+		if (is_array($data) && isset($data['queue']) && isset($data['properties'])) {
+			$queueName = $data['queue'];
+			$messageId = $data['properties']['MessageId'];
+			$lockToken = $data['properties']['LockToken'];
+		} else {
+			$queueName = (string) $data;
+		}
+
 		$uri = sprintf('%s/messages/%s/%s', $queueName, $messageId, $lockToken);
 		$headers = [ 'Authorization' => $this->getAuthHeader($uri) ];
 		$response = $this->put($uri, [], $headers)->asResponse();
@@ -191,13 +204,22 @@ class ServiceBusClient
 	/**
 	 * Delete a message from the specified queue.
 	 *
+	 * @param string|array $data Name of queue, or Array of data returned from peek()
 	 * @param string $messageId ID of message (retrieved by peek())
 	 * @param string $lockToken Lock Token value from message
 	 * @return bool
 	 *
 	 */
-	public function deleteMessage($queueName, $messageId, $lockToken)
+	public function deleteMessage($data, $messageId = null, $lockToken = null)
 	{
+		if (is_array($data) && isset($data['queue']) && isset($data['properties'])) {
+			$queueName = $data['queue'];
+			$messageId = $data['properties']['MessageId'];
+			$lockToken = $data['properties']['LockToken'];
+		} else {
+			$queueName = (string) $data;
+		}
+
 		$uri = sprintf('%s/messages/%s/%s', $queueName, $messageId, $lockToken);
 		$headers = [ 'Authorization' => $this->getAuthHeader($uri) ];
 		$response = $this->delete($uri, [], $headers)->asResponse();
